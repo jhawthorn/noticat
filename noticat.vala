@@ -33,6 +33,14 @@ public class Notification: Object{
 	public Notification(){
 		notifications.prepend(this);
 	}
+	public static Notification getid(uint id){
+		foreach(Notification notification in notifications){
+			if(id == notification.id){
+				return notification;
+			}
+		}
+		return new Notification();
+	}
 	private void settimeout(){
 		Timeout.add((uint)remaining, timer);
 	}
@@ -75,7 +83,7 @@ public class NotificationServer : Object{
 		if(timeout <= 0)
 			timeout = DEFAULT_TIMEOUT;
 
-		Notification n = new Notification();
+		Notification n = Notification.getid(id);
 		n.id = id;
 		n.text = @"$summary $body".strip();
 		n.remaining = timeout;
