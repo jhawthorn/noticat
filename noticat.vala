@@ -1,6 +1,6 @@
 /* vim:set noexpandtab shiftwidth=3 tabstop=3:*/
 
-public const int DEFAULT_TIMEOUT = 1000;
+public const int DEFAULT_TIMEOUT = 3000;
 
 public class Notification: Object{
 	public uint id;
