@@ -1,5 +1,7 @@
 /* vim:set noexpandtab shiftwidth=3 tabstop=3:*/
 
+using X;
+
 public const int DEFAULT_TIMEOUT = 3000;
 
 public class Notification: Object{
@@ -53,15 +55,14 @@ public class Notification: Object{
 	}
 }
 
+Display d;
+Window root;
 List<Notification> notifications = new List<Notification>();
 
 void dwmDisplay(string text){
-	try{
-		Process.spawn_sync(null, {"/usr/bin/xsetroot", "-name", text}, null,
-			GLib.SpawnFlags.STDOUT_TO_DEV_NULL | GLib.SpawnFlags.STDERR_TO_DEV_NULL,
-			null);
-	}catch(SpawnError e){
-	}
+	d.change_property(root, XA_WM_NAME, d.intern_atom("STRING", true), 8, 0, (uchar[])text, (int)text.length);
+	//d.store_name(root, text);
+	d.flush();
 }
 
 void displayText(){
@@ -85,7 +86,7 @@ public class NotificationServer : Object{
 
 		Notification n = Notification.getid(id);
 		n.id = id;
-		n.text = @"$summary $body".strip();
+		n.text = (summary + " " + body).strip();
 		n.remaining = timeout;
 
 		return notification_id;
@@ -123,6 +124,9 @@ class Clock: Notification {
 }
 
 void main(){
+	d = new Display();
+	root = d.default_root_window();
+
 	var loop = new MainLoop (null, false);
 
 	try {
