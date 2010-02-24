@@ -1,6 +1,7 @@
 /* vim:set noexpandtab shiftwidth=3 tabstop=3:*/
 
 using X;
+using GLib.FileUtils;
 
 public const int DEFAULT_TIMEOUT = 3000;
 
@@ -123,6 +124,45 @@ class Clock: Notification {
 	}
 }
 
+class BatteryMonitor: Notification {
+	private string batdir;
+	private string str;
+	private int full_charge;
+	public BatteryMonitor(){
+		batdir = "/sys/class/power_supply/BAT0";
+		id = 1;
+		priority = -1;
+		string tmp;
+		try{
+			get_contents(@batdir + "/charge_full", out tmp);
+		}catch(FileError e){
+			full_charge = 1;
+		}
+		full_charge = tmp.to_int();
+		updatetime();
+	}
+	public override string text{
+		set{}
+		get{
+			return str;
+		}
+	}
+	private void updatetime(){
+		remaining = 60000; /* Once a minute */
+		try{
+			get_contents(@batdir + "/charge_now", out _text);
+			int i = _text.to_int() * 100 / full_charge;
+			str = i.to_string();
+		}catch(FileError e){
+			str = "???";
+		}
+	}
+	public override bool timer(){
+		updatetime();
+		return false; /* One shot */
+	}
+}
+
 void main(){
 	d = new Display();
 	root = d.default_root_window();
@@ -131,6 +171,8 @@ void main(){
 
 	try {
 		new Clock();
+
+		new BatteryMonitor();
 
 		var conn = DBus.Bus.get(DBus.BusType.SESSION);
 
